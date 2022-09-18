@@ -9,3 +9,29 @@ message Record {
     uint64 offset = 2;
 }
 
+//streamは複数requestをまとめて処理してからresponseを返す等の用途で使う
+service Log{
+    rpc Produce(ProduceRequest) returns (ProduceResponse){}
+    rpc Consume(ConsumeRequest) returns (ConsumeResponse){}
+    rpc ProduceStream(stream ProduceRequest) returns (stream ProduceResponse){}
+    rpc ConsumeStream(ConsumeRequest) returns (stream ConsumeResponse){}
+
+}
+
+message ProduceRequest {
+    Record record = 1;
+}
+
+message ProduceResponse{
+    uint64 offset = 1;
+}
+
+
+message ConsumeRequest {
+    uint64 offset = 1;
+    
+}
+
+message ConsumeResponse{
+    Record record = 1;
+}

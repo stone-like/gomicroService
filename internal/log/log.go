@@ -1,7 +1,6 @@
 package log
 
 import (
-	"errors"
 	"io"
 	"os"
 	"path"
@@ -12,8 +11,6 @@ import (
 
 	api "github.com/stonelike/gomicro/api/v1"
 )
-
-var ErrOffsetOutOfBound = errors.New("offset out of range")
 
 type Log struct {
 	mu     sync.RWMutex
@@ -129,7 +126,7 @@ func (l *Log) Read(off uint64) (*api.Record, error) {
 	}
 
 	if s == nil || s.nextOffset <= off {
-		return nil, ErrOffsetOutOfBound
+		return nil, api.ErrOffsetOutOfRange{Offset: off}
 	}
 
 	return s.Read(off)
@@ -213,6 +210,7 @@ func (l *Log) Truncate(lowest uint64) error {
 }
 
 //MultiReaderにして使いどころがわからない、一気に全内容読むとかあるかな？
+//と思ってたけど、raft使用時にNodeが落ちたときの復旧作業で使うっぽい
 func (l *Log) Reader() io.Reader {
 	l.mu.RLock()
 	defer l.mu.RUnlock()
