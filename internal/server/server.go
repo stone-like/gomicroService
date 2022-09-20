@@ -140,6 +140,10 @@ func (s *grpcServer) ProduceStream(stream api.Log_ProduceStreamServer) error {
 //この定義の時はserverSide streamingなのでserver側がsend
 func (s *grpcServer) ConsumeStream(req *api.ConsumeRequest, stream api.Log_ConsumeStreamServer) error {
 	for {
+
+		// api.ErrOffsetOutOfRangeのときにずっとループしてしまうんじゃと思うが、
+		//その時は<-stream.Context.Done()で切れるので無限にはならない(ただcontext制作側でtimeoutの時間や、しっかりcancelしないとここでDone()チェックしている意味がない)
+		//ErrOffsetOutOfRangeの時も即returnにするのもアリではあると思う
 		select {
 		case <-stream.Context().Done():
 			return nil
