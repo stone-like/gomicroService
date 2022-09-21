@@ -7,6 +7,8 @@ option go_package = "github.com/stonelike/api/log.v1";
 message Record {
     bytes value = 1;
     uint64 offset = 2;
+    uint64 term = 3;
+    uint32 type = 4;
 }
 
 //streamは複数requestをまとめて処理してからresponseを返す等の用途で使う
