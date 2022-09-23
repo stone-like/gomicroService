@@ -141,6 +141,7 @@ func (l *DistributedLog) setupRaft(dataDir string) error {
 	return nil
 }
 
+//TermとかindexはraftのdispatchLogで勝手に書いてくれるので設定しないでいい
 func (l *DistributedLog) Append(record *api.Record) (uint64, error) {
 	res, err := l.apply(
 		AppendRequestType,
@@ -243,6 +244,23 @@ func (l *DistributedLog) Close() error {
 	}
 
 	return l.log.Close()
+}
+
+func (l *DistributedLog) GetServers() ([]*api.Server, error) {
+	future := l.raft.GetConfiguration()
+	if err := future.Error(); err != nil {
+		return nil, err
+	}
+	var servers []*api.Server
+	for _, server := range future.Configuration().Servers {
+		servers = append(servers, &api.Server{
+			Id:       string(server.ID),
+			RpcAddr:  string(server.Address),
+			IsLeader: l.raft.Leader() == server.Address,
+		})
+	}
+
+	return servers, nil
 }
 
 var _ raft.FSM = (*fsm)(nil)
